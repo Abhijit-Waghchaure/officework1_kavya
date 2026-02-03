@@ -1,0 +1,492 @@
+<div class="user-container">
+
+  <!-- LEFT PANEL -->
+  <div class="sidebar" [class.open]="isSidebarOpen">
+
+   <img src="Kavya-scaled.png" alt="Company Logo" width="150">
+
+    <br><br><br>
+    <h3 class="logo">Welcome user</h3>
+
+  <ul class="menu">
+
+  <li (click)="selectMenu('profile'); closeSidebar()"
+      [class.active]="selectedMenu === 'profile'">
+    Profile
+  </li>
+
+  <li (click)="selectMenu('leads'); closeSidebar()"
+      [class.active]="selectedMenu === 'leads'">
+    My Leads
+  </li>
+
+  <li (click)="selectMenu('tasks'); closeSidebar()"
+      [class.active]="selectedMenu === 'tasks'">
+    My Tasks
+  </li>
+
+  <li (click)="selectMenu('projects'); closeSidebar()"
+      [class.active]="selectedMenu === 'projects'">
+    My Projects
+  </li>
+
+  <li (click)="selectMenu('reports'); closeSidebar()"
+      [class.active]="selectedMenu === 'reports'">
+    Daily Report
+  </li>
+
+  <li class="logout" (click)="logout(); closeSidebar()">
+    Logout
+  </li>
+
+</ul>
+
+  </div>
+
+  <!-- RIGHT PANEL -->
+  <div class="content">
+    <!-- MOBILE HEADER -->
+<div class="mobile-header">
+  <button class="hamburger" (click)="toggleSidebar()">☰</button>
+  <span class="mobile-title">User Panel</span>
+</div>
+
+    <!-- PROFILE -->
+    <!-- DASHBOARD -->
+    <div *ngIf="selectedMenu === 'profile'">
+
+      <!-- SUMMARY CARDS -->
+      <div class="dashboard-summary">
+        <div class="dashboard-card">
+          <p class="label">Total Leads</p>
+          <h2>{{ dashboardSummary.totalLeads }}</h2>
+        </div>
+
+        <div class="dashboard-card">
+          <p class="label">Assigned Leads</p>
+          <h2>{{ dashboardSummary.assignedLeads }}</h2>
+        </div>
+
+        <div class="dashboard-card">
+          <p class="label">Total Projects</p>
+          <h2>{{ dashboardSummary.totalProjects }}</h2>
+        </div>
+
+        <div class="dashboard-card">
+          <p class="label">Active Projects</p>
+          <h2>{{ dashboardSummary.activeProjects }}</h2>
+        </div>
+      </div>
+
+      <!-- CHARTS -->
+      <div class="dashboard-analytics">
+        <div class="card chart-card">
+          <h3>My Leads Distribution</h3>
+          <canvas id="userLeadsDonut"></canvas>
+        </div>
+
+        <div class="card chart-card">
+          <h3>My Projects Status</h3>
+          <canvas id="userProjectsDonut"></canvas>
+        </div>
+      </div>
+
+      <!-- LEAD FUNNEL -->
+      <div class="card full-width">
+        <h3>My Lead Funnel</h3>
+
+        <table class="users-table" *ngIf="leadFunnelRows.length">
+          <tr *ngFor="let row of leadFunnelRows">
+            <td>{{ row.status }}</td>
+            <td>{{ row.count }}</td>
+          </tr>
+        </table>
+      </div>
+
+    </div>
+
+
+
+
+
+    <!-- LEADS -->
+    <div *ngIf="selectedMenu === 'leads'" class="section">
+      
+      <div class="header">
+        <h1>My Leads</h1>
+        <button class="add-btn" (click)="openAddModal()">+ Add Lead</button>
+      </div>
+      
+      <div class="leads-filters">
+
+        <select [(ngModel)]="filterStatus">
+          <option value="">All Status</option>
+          <option *ngFor="let s of statuses">{{ s }}</option>
+        </select>
+
+        <input type="date" [(ngModel)]="startDate">
+        <input type="date" [(ngModel)]="endDate">
+
+        <button (click)="applyMyLeadFilters()">Apply</button>
+        <button class="secondary" (click)="resetMyLeadFilters()">Reset</button>
+
+      </div>
+
+
+      <table *ngIf="leads.length">
+        <thead>
+          <tr>
+            <th>Leadid</th>
+            <th>Client</th>
+            <th>Mobile no</th>
+            <th>Company</th>
+            <th>Project</th>
+            <th>Budget</th>
+            <th>Status</th>
+            <th>Timeline</th>
+            <th>Reference</th>
+            <th>Description</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <tr *ngFor="let lead of leads">
+            <td>{{lead.id}}</td>
+            <td>{{ lead.clientName }}</td>
+            <td>{{lead.mobileno }}</td>
+            <td>{{ lead.companyName }}</td>
+            <td>{{ lead.projectType }}</td>
+            <td>{{ lead.budgetRange }}</td>
+            <td>{{ lead.status }}</td>
+            <td>{{ lead.timeline }}</td>
+            <td>{{ lead.reference }}</td>
+            <td>
+              <button class="view-btn" (click)="openDescription(lead.description)">
+                View
+              </button>
+            </td>
+            <td>
+              <button class="edit-btn" *ngIf="lead.status !== 'Closed'" (click)="openEditModal(lead)">
+                Edit
+              </button>
+
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <p *ngIf="!leads.length" class="empty">
+        No leads found.
+      </p>
+    </div>
+
+    <!-- ADD / EDIT LEAD MODAL -->
+    <div class="modal" *ngIf="showModal">
+      <div class="modal-content large">
+
+        <h2>{{ isEdit ? 'Edit Lead' : 'Add Lead' }}</h2>
+
+        <form #leadFormRef="ngForm">
+
+          <div class="form-grid">
+
+            <div class="form-field">
+              <label>Client Name</label>
+              <input name="clientName" [(ngModel)]="leadForm.clientName" required />
+            </div>
+
+            <div class="form-field">
+              <label>Company Name</label>
+              <input name="companyName" [(ngModel)]="leadForm.companyName" />
+            </div>
+
+            <div class="form-field">
+              <label>Mobile No</label>
+              <input type="number" name="mobileno" [(ngModel)]="leadForm.mobileno" required />
+            </div>
+
+            <div class="form-field">
+              <label>Project Type</label>
+              <input name="projectType" [(ngModel)]="leadForm.projectType" required />
+            </div>
+
+            <div class="form-field">
+              <label>Budget Range</label>
+              <input type="number" name="budgetRange" [(ngModel)]="leadForm.budgetRange" min="0" required />
+            </div>
+
+            <div class="form-field">
+              <label>Timeline</label>
+              <input name="timeline" [(ngModel)]="leadForm.timeline" required />
+            </div>
+
+            <div class="form-field">
+              <label>Reference</label>
+              <input name="reference" [(ngModel)]="leadForm.reference" />
+            </div>
+
+            <div class="form-field">
+              <label>Status</label>
+              <select name="status" [(ngModel)]="leadForm.status" (change)="onStatusChange()" required>
+                <option *ngFor="let s of statuses">{{ s }}</option>
+              </select>
+            </div>
+
+            <div class="form-field">
+              <label>Sales Mail</label>
+              <input name="mail" [(ngModel)]="leadForm.mail" disabled />
+            </div>
+
+          </div>
+
+
+          <!-- 🔥 CONDITIONAL TASK SECTION -->
+          <!-- <div *ngIf="isTaskRequired()" class="task-section">
+
+        <label>Task Date</label>
+        <input
+          type="date"
+          name="taskDate"
+          [(ngModel)]="leadForm.taskDate"
+          required
+        />
+
+      </div> -->
+
+
+          <div *ngIf="isTaskRequired()" class="task-section">
+
+            <h4>Follow-up Task</h4>
+
+            <div class="form-field">
+              <label>Task Date</label>
+              <input type="date" name="taskDate" [(ngModel)]="leadForm.taskDate" required />
+            </div>
+
+            <div class="form-field">
+              <label>Task Note</label>
+              <textarea name="taskNote" [(ngModel)]="leadForm.taskNote" placeholder="Reason / next step" required>
+    </textarea>
+            </div>
+
+          </div>
+
+
+
+
+          <textarea name="description" placeholder="Description" [(ngModel)]="leadForm.description" required></textarea>
+
+          <!-- ACTIONS -->
+          <div class="modal-actions">
+            <button type="button" (click)="saveLead()" [disabled]="leadFormRef.invalid">
+              {{ isEdit ? 'Update' : 'Save' }}
+            </button>
+
+            <button type="button" class="cancel" (click)="closeModal()">
+              Cancel
+            </button>
+          </div>
+
+        </form>
+
+      </div>
+    </div>
+
+
+    <!-- DESCRIPTION MODAL -->
+    <div class="modal" *ngIf="showDescModal">
+      <div class="modal-content desc-box">
+
+        <h2>Lead Description</h2>
+
+        <div class="desc-text">
+          {{ selectedDescription }}
+        </div>
+
+        <div class="modal-actions">
+          <button class="cancel" (click)="closeDescription()">Close</button>
+        </div>
+
+      </div>
+    </div>
+
+
+
+
+    <!-- MY TASKS -->
+    <div *ngIf="selectedMenu === 'tasks'" class="leads-page">
+
+      <div class="leads-header">
+        <h1>My Tasks</h1>
+      </div>
+
+      <!-- FILTER BAR -->
+      <div class="leads-filters">
+
+        <div class="left-filters">
+          <label>Select Date</label>
+          <input type="date" [(ngModel)]="selectedTaskDate" (change)="loadUserTasksByDate()" />
+        </div>
+
+        <div class="right-filters">
+          <button class="secondary" (click)="resetUserTaskFilter()" [disabled]="!selectedTaskDate">
+            Reset
+          </button>
+        </div>
+
+      </div>
+
+
+      <!-- TABLE -->
+      <div class="table-wrapper">
+        <table class="users-table" *ngIf="tasks.length">
+          <thead>
+            <tr>
+              <th>Lead ID</th>
+              <th>Client</th>
+              <th>Task Type</th>
+              <th>Task Date</th>
+              <th>Note</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            <tr *ngFor="let t of tasks">
+              <td>{{ t.leadId }}</td>
+              <td>{{t.clientName}}</td>
+              <td>{{ t.taskType }}</td>
+              <td>{{ t.taskDate }}</td>
+              <td>{{ t.note || '-' }}</td>
+              <td>
+                <span class="status-pill">
+                  {{ t.status }}
+                </span>
+              </td>
+              <button *ngIf="t.status === 'PENDING'" class="primary-btn" (click)="markTaskDone(t.id)">
+                Done
+              </button>
+
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p *ngIf="!tasks.length" class="empty">
+        No tasks found.
+      </p>
+
+    </div>
+
+
+    <!-- PROJECTS -->
+    <div *ngIf="selectedMenu === 'projects'">
+      
+      <h1>My Projects</h1><br>
+
+<div class="projects-filter">
+
+  <div class="filter-group">
+    <label>Status</label>
+    <select [(ngModel)]="projectStatus">
+      <option value="">All</option>
+      <option value="Active">Active</option>
+      <option value="Completed">Completed</option>
+    </select>
+  </div>
+
+</div>
+
+
+
+
+
+      <table class="users-table" *ngIf="projects.length">
+        <thead>
+          <tr>
+            <th>Project Id</th>
+            <th>Lead Id</th>
+            <th>Status</th>
+            <th>Project</th>
+            <th>Client</th>
+            <th>Team</th>
+            <th>Start Date</th>
+            <th>End Date</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <!-- <tr *ngFor="let p of projects"> -->
+          <tr *ngFor="let p of filteredProjects">
+
+            <td>{{ p.id }}</td>
+            <td>{{ p.leadid }}</td>
+            <td>{{ p.status }}</td>
+            <td>{{ p.projectName }}</td>
+            <td>{{ p.clientName }}</td>
+            <td>{{ p.teamName }}</td>
+            <td>{{ p.startDate }}</td>
+            <td>{{ p.endDate }}</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <p *ngIf="!projects.length" class="empty">
+        No projects assigned to you.
+      </p>
+
+    </div>
+
+
+    <!-- REPORTS -->
+    <!-- DAILY REPORT -->
+    <div *ngIf="selectedMenu === 'reports'" class="section">
+
+      <h1>Daily Report</h1>
+
+      <!-- DATE PICKER -->
+      <div class="leads-filters">
+        <input type="date" [(ngModel)]="reportDate" (change)="loadDailyReport()" />
+      </div>
+
+      <!-- SUMMARY CARDS -->
+      <div class="dashboard-summary">
+
+        <div class="dashboard-card">
+          <p class="label">Total Leads</p>
+          <h2>{{ dailyReport.totalLeads || 0 }}</h2>
+        </div>
+
+        <div class="dashboard-card">
+          <p class="label">Leads Today</p>
+          <h2>{{ dailyReport.leadsToday || 0 }}</h2>
+        </div>
+
+        <div class="dashboard-card">
+          <p class="label">Total Tasks</p>
+          <h2>{{ dailyReport.totalTasks || 0 }}</h2>
+        </div>
+
+        <div class="dashboard-card">
+          <p class="label">Tasks Today</p>
+          <h2>{{ dailyReport.tasksToday || 0 }}</h2>
+        </div>
+
+        <div class="dashboard-card">
+          <p class="label">Completed Tasks</p>
+          <h2>{{ dailyReport.completedTasksToday || 0 }}</h2>
+        </div>
+
+        <div class="dashboard-card">
+          <p class="label">Active Projects</p>
+          <h2>{{ dailyReport.activeProjects || 0 }}</h2>
+        </div>
+
+      </div>
+
+    </div>
+
+
+  </div>
+</div>

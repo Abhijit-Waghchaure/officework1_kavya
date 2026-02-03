@@ -1,0 +1,776 @@
+<div class="admin-container">
+
+  <!-- LEFT PANEL -->
+ <div class="sidebar" [class.open]="isSidebarOpen">
+
+
+    <img src="Kavya-scaled.png" alt="Company Logo" width="150">
+
+    <br><br><br>
+    <h2 class="logo">Welcome Admin </h2>
+
+    <ul class="menu">
+
+  <li
+    (click)="selectMenu('dashboard'); closeSidebar()"
+    [class.active]="selectedMenu === 'dashboard'">
+    Dashboard
+  </li>
+
+  <li
+    (click)="selectMenu('users'); closeSidebar()"
+    [class.active]="selectedMenu === 'users'">
+    Manage Users
+  </li>
+
+  <li
+    (click)="selectMenu('leads'); closeSidebar()"
+    [class.active]="selectedMenu === 'leads'">
+    Leads
+  </li>
+
+  <li
+    (click)="selectMenu('projects'); closeSidebar()"
+    [class.active]="selectedMenu === 'projects'">
+    Projects
+  </li>
+
+  <li
+    (click)="selectMenu('reports'); closeSidebar()"
+    [class.active]="selectedMenu === 'reports'">
+    Reports
+  </li>
+
+  <li
+    (click)="selectMenu('tasks'); closeSidebar()"
+    [class.active]="selectedMenu === 'tasks'">
+    Tasks
+  </li>
+
+  <li
+    class="logout"
+    (click)="logout(); closeSidebar()">
+    Logout
+  </li>
+
+</ul>
+
+  </div>
+
+  <!-- RIGHT PANEL -->
+  <div class="content">
+
+    <!-- MOBILE HEADER -->
+<div class="mobile-header">
+  <button class="hamburger" (click)="toggleSidebar()">☰</button>
+  <span class="mobile-title">Admin Panel</span>
+</div>
+
+
+    <!-- DASHBOARD -->
+    <div *ngIf="selectedMenu === 'dashboard'">
+
+      <!-- SUMMARY CARDS -->
+      <div class="dashboard-summary">
+        <div class="dashboard-card">
+          <p class="label">Total Leads</p>
+          <h2>{{ dashboardSummary.totalLeads }}</h2>
+        </div>
+
+        <div class="dashboard-card">
+          <p class="label">Assigned Leads</p>
+          <h2>{{ dashboardSummary.assignedLeads }}</h2>
+        </div>
+
+        <div class="dashboard-card">
+          <p class="label">Total Projects</p>
+          <h2>{{ dashboardSummary.totalProjects }}</h2>
+        </div>
+
+        <div class="dashboard-card">
+          <p class="label">Active Projects</p>
+          <h2>{{ dashboardSummary.activeProjects }}</h2>
+        </div>
+      </div>
+
+      <!-- ANALYTICS -->
+      <div class="dashboard-analytics">
+
+        <!-- LEADS DONUT -->
+        <div class="card chart-card">
+          <h3>Leads Distribution</h3>
+          <canvas id="leadsDonut"></canvas>
+        </div>
+
+        <!-- PROJECTS DONUT -->
+        <div class="card chart-card">
+          <h3>Projects Status</h3>
+          <canvas id="projectsDonut"></canvas>
+        </div>
+
+      </div>
+
+      <!-- LEAD FUNNEL TABLE -->
+      <div class="card full-width">
+        <h3>Lead Funnel</h3>
+
+        <table class="users-table" *ngIf="leadFunnelRows.length">
+          <thead>
+            <tr>
+              <th>Status</th>
+              <th>Count</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let row of leadFunnelRows">
+              <td>{{ row.status }}</td>
+              <td>{{ row.count }}</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <p *ngIf="!leadFunnelRows.length" class="empty">
+          No funnel data available.
+        </p>
+      </div>
+
+
+
+    </div>
+
+
+
+
+
+    <!-- USERS -->
+    <div *ngIf="selectedMenu === 'users'">
+      <div class="users-header">
+        <h1>Manage Users</h1>
+        <button class="primary-btn" (click)="resetForm(); showUserModal = true">
+          + Add User
+        </button>
+      </div>
+
+      <table class="users-table">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Role</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <tr *ngFor="let user of users">
+            <td>{{ user.firstname }} {{ user.lastname }}</td>
+            <td>{{ user.mail }}</td>
+            <td>{{ user.role }}</td>
+            <td>
+              <button class="edit-btn" (click)="editUser(user); showUserModal = true">
+                Edit
+              </button>
+              <button class="delete" (click)="deleteUser(user.id)">
+                Delete
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- USER MODAL -->
+   <div class="modal" *ngIf="showUserModal">
+  <div class="modal-content user-modal">
+
+    <h2>{{ newUser.id ? 'Edit User' : 'Add User' }}</h2>
+
+    <form #userFormRef="ngForm">
+
+      <div class="form-grid">
+
+        <!-- First Name -->
+        <div class="form-field">
+          <label>First Name <span class="required">*</span></label>
+          <input
+            name="firstname"
+            [(ngModel)]="newUser.firstname"
+            required
+            placeholder="Enter first name"
+          />
+        </div>
+
+        <!-- Last Name -->
+        <div class="form-field">
+          <label>Last Name <span class="required">*</span></label>
+          <input
+            name="lastname"
+            [(ngModel)]="newUser.lastname"
+            required
+            placeholder="Enter last name"
+          />
+        </div>
+
+        <!-- Email -->
+        <div class="form-field">
+          <label>Email <span class="required">*</span></label>
+          <input
+            name="mail"
+            [(ngModel)]="newUser.mail"
+            required
+            placeholder="username@kavyainfoweb.com"
+            pattern="^[a-zA-Z0-9._%+-]+@kavyainfoweb\.com$"
+            #emailRef="ngModel"
+          />
+          <div *ngIf="emailRef.invalid && emailRef.touched" class="error">
+            Please use your <strong>&#64;kavyainfoweb.com</strong> email.
+          </div>
+        </div>
+
+        <!-- Password -->
+        <div class="form-field">
+          <label>Password <span class="required">*</span></label>
+          <input
+            type="password"
+            name="password"
+            [(ngModel)]="newUser.password"
+            required
+            placeholder="Enter password"
+          />
+        </div>
+
+        <!-- Role -->
+        <div class="form-field">
+          <label>Role <span class="required">*</span></label>
+          <select
+            name="role"
+            [(ngModel)]="newUser.role"
+            required
+          >
+            <option value="" disabled>Select role</option>
+            <option value="USER">USER</option>
+            <option value="ADMIN">ADMIN</option>
+          </select>
+        </div>
+
+      </div>
+
+      <!-- ACTIONS -->
+      <div class="modal-actions">
+
+        <button
+          *ngIf="!newUser.id"
+          class="primary-btn"
+          type="button"
+          (click)="addUser(); showUserModal = false"
+          [disabled]="userFormRef.invalid"
+        >
+          Add User
+        </button>
+
+        <button
+          *ngIf="newUser.id"
+          class="primary-btn"
+          type="button"
+          (click)="updateUser(); showUserModal = false"
+          [disabled]="userFormRef.invalid"
+        >
+          Update User
+        </button>
+
+        <button
+          type="button"
+          class="delete"
+          (click)="showUserModal = false"
+        >
+          Cancel
+        </button>
+
+      </div>
+
+    </form>
+
+  </div>
+</div>
+
+
+
+
+    <!-- LEADS -->
+    <div *ngIf="selectedMenu === 'leads'" class="leads-page">
+
+      <!-- HEADER -->
+      <div class="leads-header">
+        <h1>All Leads</h1>
+      </div>
+
+      <!-- FILTER BAR (COMBINED FILTERS) -->
+      <div class="leads-filters">
+
+        <!-- LEFT FILTERS -->
+        <div class="left-filters">
+          <input placeholder="Search by sales mail" [(ngModel)]="filterMail" />
+
+          <select [(ngModel)]="filterStatus">
+            <option value="">All Status</option>
+            <option *ngFor="let s of statuses" [value]="s">
+              {{ s }}
+            </option>
+          </select>
+        </div>
+
+        <!-- RIGHT FILTERS -->
+        <div class="right-filters">
+          <input type="date" [(ngModel)]="startDate">
+          <input type="date" [(ngModel)]="endDate">
+
+          <button (click)="applyLeadFilters()">Apply</button>
+          <button class="secondary" (click)="resetLeadFilters()">Reset</button>
+        </div>
+
+      </div>
+
+      <!-- TABLE -->
+      <div class="table-wrapper">
+        <table class="users-table leads-table" *ngIf="leads.length">
+          <thead>
+            <tr>
+              <th class="col-date">Date</th>
+              <th class="col-id">ID</th>
+              <th>Client</th>
+              <th>Company</th>
+              <th class="col-mobile">Mobile</th>
+              <th>Project</th>
+              <th class="col-budget">Budget</th>
+              <th class="col-status">Status</th>
+              <th class="col-mail">Sales Mail</th>
+              <th class="col-actions">Actions</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            <tr *ngFor="let lead of leads">
+              <td class="col-date">{{ lead.createdDate }}</td>
+              <td class="col-id">{{ lead.id }}</td>
+              <td>{{ lead.clientName }}</td>
+              <td>{{ lead.companyName }}</td>
+              <td class="col-mobile">{{ lead.mobileno }}</td>
+              <td>{{ lead.projectType }}</td>
+              <td class="col-budget">{{ lead.budgetRange }}</td>
+              <td class="col-status">
+                <span class="status-pill">{{ lead.status }}</span>
+              </td>
+              <td class="col-mail">{{ lead.mail }}</td>
+              <td class="col-actions">
+                <button class="icon-btn edit-btn" (click)="openEditLead(lead)">✏️</button>
+                <button class="icon-btn view-btn" (click)="openDescription(lead.description)">👁️</button>
+                <button class="icon-btn assign-btn" (click)="openAssignProject(lead)"
+                  [disabled]="lead.status === 'Assigned'">
+                  ➕
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p *ngIf="!leads.length" class="empty">No leads found.</p>
+    </div>
+
+
+
+    <!-- EDIT LEAD MODAL -->
+    <div class="modal" *ngIf="showEditModal">
+      <div class="modal-content large">
+
+        <h2>Edit Lead</h2>
+
+        <form #editLeadFormRef="ngForm">
+
+          <div class="form-grid">
+
+            <!-- Read-only fields -->
+            <input name="clientName" [(ngModel)]="leadForm.clientName" disabled>
+
+            <input name="companyName" [(ngModel)]="leadForm.companyName" disabled>
+
+            <!-- Required editable fields -->
+            <input name="projectType" [(ngModel)]="leadForm.projectType" placeholder="Project Type" required>
+
+            <input name="budgetRange" [(ngModel)]="leadForm.budgetRange" placeholder="Budget Range" required>
+
+            <input name="timeline" [(ngModel)]="leadForm.timeline" placeholder="Timeline" required>
+
+            <input name="reference" [(ngModel)]="leadForm.reference" placeholder="Reference" required>
+
+            <select name="status" [(ngModel)]="leadForm.status" required>
+              <option value="" disabled>Select Status</option>
+              <option *ngFor="let s of statuses" [value]="s">
+                {{ s }}
+              </option>
+            </select>
+
+            <input name="mail" [(ngModel)]="leadForm.mail" disabled>
+
+          </div>
+
+          <textarea name="description" [(ngModel)]="leadForm.description" placeholder="Description" required></textarea>
+
+          <div class="modal-actions">
+            <button type="button" (click)="saveLead()" [disabled]="editLeadFormRef.invalid">
+              Update
+            </button>
+
+            <button type="button" class="delete" (click)="closeEditModal()">
+              Cancel
+            </button>
+          </div>
+
+        </form>
+
+      </div>
+    </div>
+
+
+    <!-- DESCRIPTION MODAL -->
+    <div class="modal" *ngIf="showDescModal">
+      <div class="modal-content desc-box">
+        <h2>Lead Description</h2>
+
+        <div class="desc-text">
+          {{ selectedDescription }}
+        </div>
+
+        <div class="modal-actions">
+          <button class="delete" (click)="closeDescription()">Close</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ASSIGN PROJECT MODAL -->
+<div class="modal" *ngIf="showAssignProjectModal">
+  <div class="modal-content large">
+
+
+    <h2>Assign Project</h2>
+
+    <form #assignProjectFormRef="ngForm">
+
+      <div class="form-grid">
+
+        <div>
+          <label>Lead ID</label>
+          <input
+            name="leadid"
+            [(ngModel)]="projectForm.leadid"
+            disabled
+          />
+        </div>
+
+        <div>
+          <label>Project Name</label>
+          <input
+            name="projectName"
+            [(ngModel)]="projectForm.projectName"
+            required
+          />
+        </div>
+
+        <div>
+          <label>Client Name</label>
+          <input
+            name="clientName"
+            [(ngModel)]="projectForm.clientName"
+            required
+          />
+        </div>
+
+        <div>
+          <label>Project Type</label>
+          <input
+            name="projectType"
+            [(ngModel)]="projectForm.projectType"
+            required
+          />
+        </div>
+
+        <div>
+          <label>IT Team Name</label>
+          <input
+            name="teamName"
+            [(ngModel)]="projectForm.teamName"
+            required
+          />
+        </div>
+
+        <div>
+          <label>Start Date </label>
+          <input
+            type="date"
+            name="startDate"
+            [(ngModel)]="projectForm.startDate"
+            required
+          />
+        </div>
+
+        <div>
+          <label > end date</label>
+          <input
+            type="date"
+            name="endDate"
+            [(ngModel)]="projectForm.endDate"
+            required
+          />
+        </div>
+
+        <div>
+          <label>Sales Mail</label>
+          <input
+            name="salesMail"
+            [(ngModel)]="projectForm.salesMail"
+            disabled
+          />
+        </div>
+
+      </div>
+
+      <div class="modal-actions">
+
+        <button
+          type="button"
+          class="primary-btn"
+          (click)="saveProject()"
+          [disabled]="assignProjectFormRef.invalid"
+        >
+          Assign Project
+        </button>
+
+        <button
+          type="button"
+          class="delete"
+          (click)="closeAssignProject()"
+        >
+          Cancel
+        </button>
+
+      </div>
+
+    </form>
+
+  </div>
+</div>
+
+
+
+
+    <!-- PROJECTS -->
+    <div *ngIf="selectedMenu === 'projects'">
+
+      <h1>All Projects</h1><br>
+
+      <table class="users-table" *ngIf="projects.length">
+        <thead>
+          <tr>
+            <th>Project Id</th>
+            <th>Lead Id</th>
+            <th>Status</th>
+            <th>Sales Mail</th>
+            <th>Project</th>
+            <th>Client</th>
+            <th>Team</th>
+            <th>Start Date</th>
+            <th>End Date</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <tr *ngFor="let p of projects">
+            <td>{{ p.id }}</td>
+            <td>{{ p.leadid }}</td>
+            <td>{{ p.status }}</td>
+            <td>{{ p.salesMail }}</td>
+            <td>{{ p.projectName }}</td>
+            <td>{{ p.clientName }}</td>
+            <td>{{ p.teamName }}</td>
+            <td>{{ p.startDate }}</td>
+            <td>{{ p.endDate }}</td>
+            <td>
+              <button
+  class="edit-btn"
+  *ngIf="p.status !== 'Completed'"
+  (click)="openEditProject(p)">
+  Edit
+</button>
+
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <p *ngIf="!projects.length" class="empty">
+        No projects found.
+      </p>
+    </div>
+
+
+    <!-- EDIT PROJECT MODAL -->
+    <div class="modal" *ngIf="showEditProjectModal">
+      <div class="modal-content large">
+
+        <h2>Edit Project</h2>
+
+        <form #editProjectFormRef="ngForm">
+
+          <div class="form-grid">
+
+            <!-- Read-only info -->
+            <input name="projectName" [(ngModel)]="editProjectForm.projectName" disabled>
+
+            <input name="clientName" [(ngModel)]="editProjectForm.clientName" disabled>
+
+            <input name="teamName" [(ngModel)]="editProjectForm.teamName" disabled>
+
+            <input name="salesMail" [(ngModel)]="editProjectForm.salesMail" disabled>
+
+            <!-- STATUS (editable) -->
+            <select name="status" [(ngModel)]="editProjectForm.status" required>
+              <option value="Active">Active</option>
+              <option value="Completed">Completed</option>
+            </select>
+
+          </div>
+
+          <div class="modal-actions">
+            <button type="button" class="primary-btn" (click)="updateProject()" [disabled]="editProjectFormRef.invalid">
+              Update
+            </button>
+
+            <button type="button" class="delete" (click)="closeEditProjectModal()">
+              Cancel
+            </button>
+          </div>
+
+        </form>
+
+      </div>
+    </div>
+
+
+    <!-- ADMIN TASKS -->
+    <div *ngIf="selectedMenu === 'tasks'" class="leads-page">
+
+      <!-- HEADER -->
+      <div class="leads-header">
+        <h1>All Tasks</h1>
+      </div>
+
+      <!-- FILTER BAR (reuse leads filters) -->
+      <div class="task-filter">
+
+        <input placeholder="Filter by sales mail" [(ngModel)]="filterTaskMail" />
+
+        <input type="date" [(ngModel)]="filterTaskDate" />
+
+        <button (click)="applyTaskFilters()">Apply</button>
+        <button class="secondary" (click)="resetTaskFilters()">Reset</button>
+
+      </div>
+
+
+
+      <!-- TABLE -->
+      <div class="table-wrapper">
+        <table class="users-table" *ngIf="tasks.length">
+          <thead>
+            <tr>
+              <th>Lead ID</th>
+              <th>Client</th>
+              <th>User Mail</th>
+              <th>Task Type</th>
+              <th>Task Date</th>
+              <th>Note</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            <tr *ngFor="let t of tasks">
+              <td>{{ t.leadId }}</td>
+              <td>{{ t.clientName }}</td>
+              <td>{{ t.salesMail }}</td>
+              <td>{{ t.taskType }}</td>
+              <td>{{ t.taskDate }}</td>
+              <td>{{ t.note || '-' }}</td>
+              <td>
+                <span class="status-pill">
+                  {{ t.status }}
+                </span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p *ngIf="!tasks.length" class="empty">
+        No tasks for selected date.
+      </p>
+
+    </div>
+
+
+
+
+    <!-- REPORTS -->
+    <!-- REPORTS -->
+    <div *ngIf="selectedMenu === 'reports'">
+
+      <h1>Reports</h1><br>
+
+      <!-- FILTER BAR -->
+      <div class="reports-filter">
+  <input type="date" [(ngModel)]="startDate">
+  <input type="date" [(ngModel)]="endDate">
+
+  <button (click)="getSalesPerformanceByDate()">Filter</button>
+  <button class="secondary" (click)="getSalesPerformance()">Reset</button>
+</div>
+
+
+      <!-- SALES PERFORMANCE -->
+      <div class="card">
+        <h3>Sales Performance</h3>
+
+        <table class="users-table" *ngIf="salesPerformance.length">
+          <thead>
+            <tr>
+              <th>Sales Mail</th>
+              <th>Total Leads</th>
+              <th>Assigned</th>
+              <th>Closed</th>
+              <th>Total Projects</th>
+              <th>Active Projects</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            <tr *ngFor="let s of salesPerformance">
+              <td>{{ s.mail }}</td>
+              <td>{{ s.totalLeads }}</td>
+              <td>{{ s.assignedLeads }}</td>
+              <td>{{ s.closedLeads }}</td>
+              <td>{{ s.totalProjects }}</td>
+              <td>{{ s.activeProjects }}</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <p *ngIf="!salesPerformance.length" class="empty">
+          No data found for selected date range.
+        </p>
+      </div>
+    </div>
+
+
+  </div>
+</div>
