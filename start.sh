@@ -3,8 +3,8 @@ set -e
 PORT=${PORT:-8080}
 
 # Build frontend (Angular)
-if [ -d salesmanagement ]; then
-  cd salesmanagement
+if [ -d salesfrontend ]; then
+  cd salesfrontend
 
   # Install Node if npm not available (tries apt, yum, apk)
   if ! command -v npm >/dev/null 2>&1; then
@@ -39,9 +39,9 @@ else
 fi
 
 # If frontend built, copy into backend resources so Spring Boot serves it
-if [ -d ../salesmanagement/dist ]; then
+if [ -d ../salesfrontend/dist ]; then
   mkdir -p src/main/resources/static
-  cp -r ../salesmanagement/dist/* src/main/resources/static/
+  cp -r ../salesfrontend/dist/* src/main/resources/static/
 fi
 
 JAR=$(ls target/*.jar | head -n1)
