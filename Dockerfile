@@ -6,7 +6,7 @@ WORKDIR /app/salesfrontend
 COPY salesfrontend/package*.json ./
 COPY salesfrontend/ ./
 RUN npm ci --silent
-RUN npm run build -- --output-path=dist || npm run build -- --outputPath=dist
+RUN npm run build
 
 # 2) Build backend (Maven wrapper)
 FROM maven:3.9-eclipse-temurin-17 AS backend-build
