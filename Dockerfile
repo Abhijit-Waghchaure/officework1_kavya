@@ -2,9 +2,9 @@
 
 # 1) Build frontend
 FROM node:20 AS ui-build
-WORKDIR /app/salesmanagement
-COPY salesmanagement/package*.json ./
-COPY salesmanagement/ ./
+WORKDIR /app/salesfrontend
+COPY salesfrontend/package*.json ./
+COPY salesfrontend/ ./
 RUN npm ci --silent
 RUN npm run build -- --output-path=dist || npm run build -- --outputPath=dist
 
@@ -14,8 +14,7 @@ WORKDIR /app/management
 COPY management/ ./
 # Ensure mvnw is executable if present
 RUN if [ -f mvnw ]; then chmod +x mvnw; fi
-# Copy frontend build into backend resources so Spring Boot can serve static files
-COPY --from=ui-build /app/salesmanagement/dist /app/management/src/main/resources/static
+COPY --from=ui-build /app/salesfrontend/dist /app/management/src/main/resources/static
 RUN ./mvnw -B -DskipTests package || mvn -B -DskipTests package
 
 # 3) Runtime image
